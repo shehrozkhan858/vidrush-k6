@@ -33,7 +33,6 @@ import {
   listVideoProjects,
   getVideoProject,
   listVideoProjectsWithRenders,
-  getProcessingProjects,
   listVideoScripts,
   getLatestVideoScript,
   listProjectRecipes,
@@ -82,10 +81,8 @@ export default function () {
 
   // --- Catalog: shared/public reference data, not owned by any one user --
   group('catalog', function () {
-    checkStatus(catalog.listSubscriptionPlansPublic(), 'subscription-plans (public)');
     checkStatus(catalog.listGenerationModels(), 'generation-models');
     checkStatus(catalog.listGenerationModelFamilies(), 'generation-models/families');
-    checkStatus(catalog.listVideoGenerationModels(), 'video-generation-models');
     checkStatus(catalog.listVoiceProfiles(), 'voice-profiles');
     checkStatus(catalog.listSharedVoiceProfiles(), 'voice-profiles/shared');
     // Fallback voice id may not exist -> 404 is a legitimate outcome, not a bug.
@@ -113,7 +110,6 @@ export default function () {
       }
     }
     checkStatus(listVideoProjectsWithRenders(), 'video-projects/with-renders');
-    checkStatus(getProcessingProjects(), 'video-projects/processing');
 
     // A real, owned id should reliably 200. A fallback id belonging to a
     // *different* account is expected to come back 403/404 — that's the

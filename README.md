@@ -47,11 +47,41 @@ Note: with only 1 token in `tokens.json`, all VUs round-robin the same identity,
 `Tests/fullReadFlow.js` additionally uses each VU's own token to list *that account's own* video projects and drills into a real owned project id when one exists (falling back to `FALLBACK_PROJECT_ID` only for accounts with none) — so with multiple tokens for accounts that actually have projects, the report reflects real per-account data, not one project being hit repeatedly from different logins.
 
 ## Before running
-`BASE_URL` is currently `https://dev.docs.api.vidrush.ai`. Note: this host issues a `307` redirect on at least `/users/me` before returning the real response, so every logical call shows up as **2** entries in `http_reqs`/the report's per-endpoint table (one for the redirect hop, one for the final response) — that's expected, not a bug in the script or the report.
+
+**⚠ 2026-09-03 correction:** `BASE_URL` was previously defaulting to `https://dev.docs.api.vidrush.ai`, which turned out to be the *documentation* site, not the API — a NextAuth-gated Next.js app that 307-redirects any request under paths like `/users/me` to its own `/auth/signin` page, which then renders with a plain `200`. Every prior run against that host (including `reports/stress-2026-09-03-1.html`) was unknowingly stress-testing that sign-in redirect, not the real backend — status-code-only checks couldn't tell the two apart. `BASE_URL` now defaults to `https://dev.api.vidrush.ai` (confirmed real: AWS API Gateway error shape, `{"message":"Forbidden"}` + `x-amzn-*` headers), and every check in `Tests/fullReadFlow.js` now also verifies the response body actually looks like JSON (`utils/helpers.js`'s `checkStatus`/`looksLikeJson`), so this class of false pass can't happen silently again.
+
+The 307-then-200 redirect behavior described below was specific to the wrong (docs) host — the real API doesn't do that; a bad/wrong-audience token now correctly shows up as a `403` with a JSON `{"message":"Forbidden"}` body, not a disguised `200`.
 
 If neither `k6` nor `node` are on your shell's PATH, use the full paths that were found on this machine:
 - k6: `C:\Program Files\k6\k6.exe`
 - node: `C:\Program Files\nodejs\node.exe`
+
+## Running a real stress test (start here)
+
+The dev API (`https://dev.api.vidrush.ai`) appears to be network-restricted — from an unallowlisted machine, **every** request returns the same `403 {"message":"Forbidden"}` whether you send a valid Bearer token, an `x-api-key`, or no credentials at all. That's AWS API Gateway rejecting at the resource-policy/WAF layer, before auth is evaluated. So:
+
+```bash
+# 0. Get on the network that can actually reach the API (VPN / office / CI runner inside the VPC).
+
+# 1. Pre-flight: are the tokens usable from here? (fast, ~3 requests)
+npm run verify:tokens
+#    -> want "3/3 token(s) usable". If you get 403s, you're either still off-network
+#       or the tokens are wrong — either way, don't bother running the stress test yet.
+
+# 2. Full stress run (step-ramps to 100 VUs over ~6 min, ~33 read-only endpoints per iteration).
+#    Writes NDJSON + generates the HTML report in one go.
+npm run test:stress:full
+
+# 3. Open the report
+open reports/stress-full-<date>-1.html    # macOS
+```
+
+Scale it down/up with `-e STRESS_MAX_VUS` / `-e STRESS_STEP` if 100 VUs is too aggressive for dev:
+```bash
+k6 run -e CONFIG_PROFILE=stress -e STRESS_MAX_VUS=30 -e STRESS_STEP=10 \
+  --out json=reports/stress-full-results.ndjson Tests/fullReadFlow.js
+node custom-report-generator/generate-report.js reports/stress-full-results.ndjson stress-full
+```
 
 ## Run
 ```powershell

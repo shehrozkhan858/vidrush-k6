@@ -6,6 +6,7 @@
   "private": true,
   "type": "commonjs",
   "scripts": {
+    "verify:tokens": "node utils/verifyTokens.js",
     "test:baseline": "k6 run -e CONFIG_PROFILE=baseline --out json=reports/baseline-results.ndjson Tests/videoProjectsReadFlow.js && node custom-report-generator/generate-report.js reports/baseline-results.ndjson baseline",
     "test:load": "k6 run -e CONFIG_PROFILE=load --out json=reports/load-results.ndjson Tests/videoProjectsReadFlow.js && node custom-report-generator/generate-report.js reports/load-results.ndjson load",
     "test:soak": "k6 run -e CONFIG_PROFILE=soak --out json=reports/soak-results.ndjson Tests/videoProjectsReadFlow.js && node custom-report-generator/generate-report.js reports/soak-results.ndjson soak",

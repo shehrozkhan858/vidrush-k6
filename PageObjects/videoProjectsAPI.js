@@ -37,7 +37,16 @@ const get = (path, name) =>
   http.get(`${BASE_URL}${path}`, { headers: authHeaders(), tags: { name } });
 
 export const listVideoProjectsWithRenders = () => get('/video-projects/with-renders', 'ListVideoProjectsWithRenders');
-export const getProcessingProjects = () => get('/video-projects/processing', 'GetProcessingProjects');
+// NOTE (2026-09-03): NOT in the load flow — this route doesn't exist on dev.
+// `/video-projects/processing` falls through to the `/video-projects/:id`
+// route, which rejects "processing" with
+//   {"params.id":["Invalid ObjectId format"]}
+// i.e. a 400, not a 404, because the literal path is shadowed by the
+// parameterised one. Kept here for whenever the route is actually deployed.
+export const getProcessingProjects = (updatedAtAfter) => {
+  const since = updatedAtAfter || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+  return get(`/video-projects/processing?updatedAtAfter=${encodeURIComponent(since)}`, 'GetProcessingProjects');
+};
 
 export const listVideoScripts = (id) => get(`/video-projects/${id}/scripts`, 'ListVideoScripts');
 export const getLatestVideoScript = (id) => get(`/video-projects/${id}/scripts/latest`, 'GetLatestVideoScript');

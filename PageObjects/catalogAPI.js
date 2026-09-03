@@ -8,12 +8,14 @@ const get = (path, name) => http.get(`${BASE_URL}${path}`, { headers: authHeader
 
 // Public — no auth required by the API, but we still send the header
 // (harmless) so behavior is consistent for signed-out vs. signed-in checks.
-export const listSubscriptionPlansPublic = () => get('/subscription-plans', 'ListSubscriptionPlansPublic');
 export const listGenerationModels = () => get('/generation-models?type=video', 'ListGenerationModels');
 export const listGenerationModelFamilies = () => get('/generation-models/families', 'ListGenerationModelFamilies');
 
-// Authenticated
-export const listVideoGenerationModels = () => get('/video-generation-models', 'ListVideoGenerationModels');
+// NOTE (2026-09-03): two endpoints in the Postman collection 404 on dev under
+// /v1 and are therefore excluded from the load flow — worth confirming whether
+// the routes were removed or the collection is stale:
+//   GET /subscription-plans        -> 404 (use /billing/subscription-plans, which works)
+//   GET /video-generation-models   -> 404 (plain /generation-models works)
 export const listVoiceProfiles = () => get('/voice-profiles', 'ListVoiceProfiles');
 export const listSharedVoiceProfiles = () => get('/voice-profiles/shared', 'ListSharedVoiceProfiles');
 export const getVoiceProfile = (voiceId) => get(`/voice-profiles/${voiceId}`, 'GetVoiceProfile');
