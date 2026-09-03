@@ -1,0 +1,20 @@
+{
+  "name": "vidrush-k6",
+  "version": "1.0.0",
+  "description": "K6 performance testing for vidrush's internal API.",
+  "license": "ISC",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "test:baseline": "k6 run -e CONFIG_PROFILE=baseline --out json=reports/baseline-results.ndjson Tests/videoProjectsReadFlow.js && node custom-report-generator/generate-report.js reports/baseline-results.ndjson baseline",
+    "test:load": "k6 run -e CONFIG_PROFILE=load --out json=reports/load-results.ndjson Tests/videoProjectsReadFlow.js && node custom-report-generator/generate-report.js reports/load-results.ndjson load",
+    "test:soak": "k6 run -e CONFIG_PROFILE=soak --out json=reports/soak-results.ndjson Tests/videoProjectsReadFlow.js && node custom-report-generator/generate-report.js reports/soak-results.ndjson soak",
+    "test:spike": "k6 run -e CONFIG_PROFILE=spike --out json=reports/spike-results.ndjson Tests/videoProjectsReadFlow.js && node custom-report-generator/generate-report.js reports/spike-results.ndjson spike",
+    "test:stress": "k6 run -e CONFIG_PROFILE=stress --out json=reports/stress-results.ndjson Tests/videoProjectsReadFlow.js && node custom-report-generator/generate-report.js reports/stress-results.ndjson stress",
+    "test:baseline:full": "k6 run -e CONFIG_PROFILE=baseline --out json=reports/baseline-full-results.ndjson Tests/fullReadFlow.js && node custom-report-generator/generate-report.js reports/baseline-full-results.ndjson baseline-full",
+    "test:load:full": "k6 run -e CONFIG_PROFILE=load --out json=reports/load-full-results.ndjson Tests/fullReadFlow.js && node custom-report-generator/generate-report.js reports/load-full-results.ndjson load-full",
+    "test:soak:full": "k6 run -e CONFIG_PROFILE=soak --out json=reports/soak-full-results.ndjson Tests/fullReadFlow.js && node custom-report-generator/generate-report.js reports/soak-full-results.ndjson soak-full",
+    "test:spike:full": "k6 run -e CONFIG_PROFILE=spike --out json=reports/spike-full-results.ndjson Tests/fullReadFlow.js && node custom-report-generator/generate-report.js reports/spike-full-results.ndjson spike-full",
+    "test:stress:full": "k6 run -e CONFIG_PROFILE=stress --out json=reports/stress-full-results.ndjson Tests/fullReadFlow.js && node custom-report-generator/generate-report.js reports/stress-full-results.ndjson stress-full"
+  }
+}
